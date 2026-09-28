@@ -1,0 +1,3 @@
+package engine
+import "testing"
+func TestPersistentSQL(t *testing.T){d:=t.TempDir();e,err:=Open(d);if err!=nil{t.Fatal(err)};if _,err=e.Exec("CREATE TABLE users (id INT, name TEXT)");err!=nil{t.Fatal(err)};if _,err=e.Exec("INSERT INTO users VALUES (1, 'Ada')");err!=nil{t.Fatal(err)};rows,err:=e.Exec("SELECT * FROM users");if err!=nil||len(rows)!=1||rows[0]["name"]!="Ada"{t.Fatalf("rows=%v err=%v",rows,err)};if err=e.Close();err!=nil{t.Fatal(err)};e,err=Open(d);if err!=nil{t.Fatal(err)};defer e.Close();rows,err=e.Exec("SELECT name FROM users WHERE id = 1");if err!=nil||len(rows)!=1||rows[0]["name"]!="Ada"{t.Fatalf("reopen rows=%v err=%v",rows,err)}}
