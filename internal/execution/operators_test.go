@@ -1,0 +1,3 @@
+package execution
+import "testing"
+func TestOperators(t *testing.T){rows:=[]Row{{"id":"1","name":"a","n":"10"},{"id":"2","name":"b","n":"20"},{"id":"3","name":"a","n":"30"}};f:=&FilterOp{Child:&Slice{Rows:rows},Column:"name",Value:"a"};got,e:=f.Next();if e!=nil||len(got)!=2{t.Fatal(got,e)};p:=&ProjectOp{Child:&Slice{Rows:got},Columns:[]string{"id"}};got,e=p.Next();if e!=nil||len(got)!=2||got[0]["id"]!="1"{t.Fatal(got,e)};g:=Group(rows,[]string{"name"},"SUM(n)");if len(g)!=2||g[0]["SUM(n)"]!="40"{t.Fatal(g)};j:=Join(rows,[]Row{{"id":"1","city":"Lagos"},{"id":"3","city":"Abuja"}},"id","id");if len(j)!=2{t.Fatal(j)}}
