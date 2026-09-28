@@ -1,69 +1,67 @@
 # VAULTDB
 
-**VAULTDB is a serious embedded relational database engine written in Go.**
+VAULTDB is an embedded relational database engine written in Go. The implementation makes core database internals explicit rather than hiding them behind a framework.
 
-It is built to make database internals explicit: fixed-size pages, durable storage, a buffer pool, a persistent catalog, SQL parsing, execution, transactions, and write-ahead logging. The project is intentionally an engine rather than a web application.
+## Engine capabilities
 
-## Current engine slice
-
-- Fixed 4 KiB pages and page headers
-- Persistent page-file storage
-- Record packing inside pages
+- Fixed-size persistent pages and page files
+- Length-prefixed record storage
 - Buffer pool with pinning, dirty tracking and LRU eviction
-- Persistent catalog for tables and columns
-- SQL parser for `CREATE TABLE`, `INSERT`, `SELECT`, `UPDATE`, `DELETE`, transaction control and `SHOW TABLES`
-- Table scans, filtering and projection
-- Atomic catalog replacement on save
-- Append-only WAL with LSNs and transaction records
-- Explicit transaction manager with `BEGIN`, `COMMIT`, `ROLLBACK`
+- Persistent schema catalog
+- SQL parsing for table creation, inserts, selects, updates, deletes and transaction control
+- Relational execution operators for scan, filter, projection, joins, grouping, aggregation, sorting and limits
+- B+ tree index implementation with ordered lookup, insertion, splitting, persistence support and deletion
+- Transaction manager with BEGIN, COMMIT and ROLLBACK records
+- Append-only write-ahead logging with LSNs and durable flushes
+- WAL transaction analysis for recovery/replay selection
+- Lock manager for read/write resource coordination
+- Failure-injection primitive for deterministic fault tests
+- Thread-safe engine metrics
 - CLI / REPL
-- Unit, integration and race-tested foundation
+- Unit tests, integration tests, race detection, vetting, build verification and benchmarks
 
 ## Architecture
 
-```text
 CLI
- ↓
-SQL Parser → AST
- ↓
-Execution Layer
- ↓
-Transaction Manager ─── WAL
- ↓
-Buffer Pool
- ↓
-Page Storage
- ↓
-Disk
- ↑
-Persistent Catalog
-```
+ -> SQL
+ -> Planner
+ -> Execution Operators
+ -> Transaction Manager
+ -> Buffer Pool
+ -> Page Storage
+ -> Disk
 
-## Roadmap
+WAL runs alongside the transaction manager. The catalog persists schema metadata and the index subsystem provides ordered key access.
 
-The engine is being built vertically. Planned subsystems include B+ tree indexes, stronger record/page layouts, a cost-aware planner, joins and aggregation, crash recovery/REDO, locking and concurrency control, failure injection, fuzzing, and benchmarks. Features are added only with executable tests and explicit persistence/recovery semantics.
+## Verification
+
+The required CI gate is:
+
+- gofmt
+- go vet ./...
+- go test ./...
+- go test -race ./...
+- go build ./...
+
+Additional benchmark and subsystem tests live beside the implementation.
 
 ## Scope
 
-VAULTDB is an engineering and learning database implementation. It is **not** presented as a production replacement for PostgreSQL, MySQL or SQLite.
+VAULTDB is an engineering and learning database implementation. It is not presented as a production replacement for PostgreSQL, MySQL or SQLite.
 
 ## Development
 
-```bash
 go test ./...
 go test -race ./...
 go vet ./...
 go build ./...
 go run ./cmd/vaultdb --database ./vaultdb-data
-```
 
-Example:
+Example SQL:
 
-```sql
 CREATE TABLE users (id INT, name TEXT);
 INSERT INTO users VALUES (1, 'Ada');
 SELECT * FROM users;
-```
 
 ## License
 
