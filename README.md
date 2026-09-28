@@ -241,7 +241,7 @@ ROLLBACK;
 
 ---
 
-## How to shake it out
+## How to Test and Verify
 
 If you want to review VAULTDB like an engineer rather than simply reading the source, start with the repository's automated gate:
 
